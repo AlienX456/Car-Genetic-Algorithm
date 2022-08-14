@@ -15,10 +15,10 @@ class RoadGenerator:
     def get_road_shapes(self, number_of_road: RoadEnum) -> [Union[Rect, Arc]]:
         shapes_list = []
         if number_of_road == RoadEnum.ELLIPSE:
-            shapes_list.append(Arc(0, 0, self.surface_height, self.surface_width, pi/2, pi, self.road_width))
-            shapes_list.append(Arc(0, 0, self.surface_height, self.surface_width, 0, pi, self.road_width))
-            shapes_list.append(Arc(0, 0, self.surface_height, self.surface_width, 3*pi/2, 2*pi, self.road_width))
-            shapes_list.append(Arc(0, 0, self.surface_height, self.surface_width, pi, 2*pi, self.road_width))
+            shapes_list.append(Arc(0, 0, self.surface_width, self.surface_height, pi/2, pi, self.road_width))
+            shapes_list.append(Arc(0, 0, self.surface_width, self.surface_height, 0, pi, self.road_width))
+            shapes_list.append(Arc(0, 0, self.surface_width, self.surface_height, 3*pi/2, 2*pi, self.road_width))
+            shapes_list.append(Arc(0, 0, self.surface_width, self.surface_height, pi, 2*pi, self.road_width))
 
         return shapes_list
 
