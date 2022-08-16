@@ -10,6 +10,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (139, 139, 139)
 GREEN = (24, 107, 24)
+CAR_SPRITE_LOCATION = 'car_game/images/car.png'
 
 
 class CarGame:
@@ -20,11 +21,14 @@ class CarGame:
         pygame.init()
         self.car_speed = car_speed
         self.screen = pygame.display.set_mode(screen_size)
+        self.screen_size = screen_size
         self.number_of_cars = number_of_cars
         self.road = road
         self.road_generator = RoadGenerator(screen_size, road_width)
         self.clock = pygame.time.Clock()
         self.frame_rate = frame_rate
+        image = pygame.image.load(CAR_SPRITE_LOCATION)
+        self.player_image = pygame.transform.scale(image, (screen_size[0]*0.0625, screen_size[1]*0.05))
 
     def start_game(self):
 
@@ -35,6 +39,9 @@ class CarGame:
             # DRAW MAP
             self.screen.fill(GREEN)
             self.__draw_road()
+
+            # DRAW PLAYER
+            self.screen.blit(self.player_image, (self.screen_size[0]/2, self.screen_size[1]/2))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
