@@ -33,8 +33,7 @@ class CarGame:
 
         exit_game = False
 
-        car_current_position_x = self.screen_size[0] / 2
-        car_current_position_y = self.screen_size[1] / 2
+        car_current_position_x, car_current_position_y = self.road_generator.get_road_initial_position(self.road)
         current_angle = 0
 
         image = pygame.image.load(CAR_SPRITE_LOCATION)

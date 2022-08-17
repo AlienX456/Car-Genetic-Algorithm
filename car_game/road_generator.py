@@ -22,4 +22,8 @@ class RoadGenerator:
 
         return shapes_list
 
+    def get_road_initial_position(self, number_of_road: RoadEnum) -> [int, int]:
+        if number_of_road == RoadEnum.ELLIPSE:
+            return self.surface_width / 2, self.surface_height - self.road_width / 2
+
 
