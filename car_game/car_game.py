@@ -4,6 +4,7 @@ from car_game.road_generator import RoadGenerator
 from car_game.road_enum import RoadEnum
 from pygame import Rect
 from car_game.pygame_shapes.arc import Arc
+import math
 
 # COLORS
 BLACK = (0, 0, 0)
@@ -28,11 +29,15 @@ class CarGame:
         self.clock = pygame.time.Clock()
         self.frame_rate = frame_rate
         image = pygame.image.load(CAR_SPRITE_LOCATION)
-        self.player_image = pygame.transform.scale(image, (screen_size[0]*0.0625, screen_size[1]*0.05))
+        player_image_rotated = pygame.transform.scale(image, (screen_size[0] * 0.0625, screen_size[1] * 0.05))
+        self.player_image = pygame.transform.rotate(player_image_rotated, -180)
 
     def start_game(self):
 
         exit_game = False
+
+        car_current_position_x = self.screen_size[0]/2
+        car_current_position_y = self.screen_size[1]/2
 
         while not exit_game:
 
@@ -40,8 +45,19 @@ class CarGame:
             self.screen.fill(GREEN)
             self.__draw_road()
 
-            # DRAW PLAYER
-            self.screen.blit(self.player_image, (self.screen_size[0]/2, self.screen_size[1]/2))
+            # DRAW CAR AND ANGLE
+            rotate_result = 0
+            speed_in_x, speed_in_y = self.__calculate_speed(rotate_result)
+            print(f'{speed_in_x} {speed_in_y}')
+            car_current_position_x += speed_in_x
+            car_current_position_y += speed_in_y
+
+            self.player_image = pygame.transform.rotate(self.player_image, rotate_result)
+            self.screen.blit(self.player_image, (car_current_position_x, car_current_position_y))
+
+
+
+
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -63,3 +79,7 @@ class CarGame:
             elif isinstance(shape, Arc):
                 pygame.draw.arc(self.screen, GRAY, shape.rect, shape.start_angle, shape.stop_angle, shape.arc_width)
 
+    def __calculate_speed(self, angle) -> Tuple[int, int]:
+        speed_x = 0 if math.cos(angle) == 0 else round(self.car_speed / math.cos(angle))
+        speed_y = 0 if math.sin(angle) == 0 else round(self.car_speed / math.sin(angle))
+        return speed_x, speed_y
