@@ -28,17 +28,18 @@ class CarGame:
         self.road_generator = RoadGenerator(screen_size, road_width)
         self.clock = pygame.time.Clock()
         self.frame_rate = frame_rate
-        image = pygame.image.load(CAR_SPRITE_LOCATION)
-        player_image_rotated = pygame.transform.scale(image, (screen_size[0] * 0.0625, screen_size[1] * 0.05))
-        self.player_image = pygame.transform.rotate(player_image_rotated, -180)
 
     def start_game(self):
 
         exit_game = False
 
-        car_current_position_x = self.screen_size[0]/2
-        car_current_position_y = self.screen_size[1]/2
+        car_current_position_x = self.screen_size[0] / 2
+        car_current_position_y = self.screen_size[1] / 2
         current_angle = 0
+
+        image = pygame.image.load(CAR_SPRITE_LOCATION)
+        player_image_rotated = pygame.transform.scale(image, (self.screen_size[0] * 0.0625, self.screen_size[1] * 0.05))
+        player_image_1 = pygame.transform.rotate(player_image_rotated, -180)
 
         while not exit_game:
 
@@ -66,8 +67,11 @@ class CarGame:
             car_current_position_x += speed_in_x
             car_current_position_y -= speed_in_y
 
-            self.player_image = pygame.transform.rotate(self.player_image, rotate_result)
-            self.screen.blit(self.player_image, (car_current_position_x, car_current_position_y))
+            player_image_1_rot, rect = self.__rot_center(player_image_1,
+                                                         current_angle,
+                                                         car_current_position_x,
+                                                         car_current_position_y)
+            self.screen.blit(player_image_1_rot, rect)
 
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
@@ -89,3 +93,8 @@ class CarGame:
         speed_x = 0 if math.cos(angle) == 0 else self.car_speed * math.cos(math.radians(angle))
         speed_y = 0 if math.sin(angle) == 0 else self.car_speed * math.sin(math.radians(angle))
         return speed_x, speed_y
+
+    def __rot_center(self, image, angle, x, y):
+        rotated_image = pygame.transform.rotate(image, angle)
+        new_rect = rotated_image.get_rect(center=image.get_rect(center=(x, y)).center)
+        return rotated_image, new_rect
