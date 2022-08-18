@@ -49,7 +49,6 @@ class CarGame:
             map_sprite = Sprite()
             map_sprite.rect = Rect(0, 0, self.screen_size[0], self.screen_size[1])
             map_sprite.image = map_surface
-            self.screen.blit(map_surface, map_sprite.rect)
             map_mask = pygame.mask.from_surface(map_surface)
 
             # VALIDATE EVENTS
@@ -77,16 +76,17 @@ class CarGame:
                                                                 car_current_position_x,
                                                                 car_current_position_y)
 
+            # DETECT COLLISION BETWEEN CAR AND GRASS
+
             player_sprite = Sprite()
             player_sprite.rect = player_rect
             player_sprite.image = player_image_1_rot
 
             print(pygame.sprite.collide_mask(map_sprite, player_sprite))
 
+            # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
+            self.screen.blit(map_surface, map_sprite.rect)
             self.screen.blit(player_image_1_rot, player_rect)
-
-            print(pygame.Rect.colliderect(self.screen.get_rect(), player_rect))
-
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
 
