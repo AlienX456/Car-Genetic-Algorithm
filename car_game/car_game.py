@@ -45,7 +45,7 @@ class CarGame:
         while not exit_game:
 
             # DRAW MAP
-            self.screen.fill(GREEN)
+            self.screen.fill(GRAY)
             map_sprite = Sprite()
             map_sprite.rect = Rect(0, 0, self.screen_size[0], self.screen_size[1])
             map_sprite.image = map_surface

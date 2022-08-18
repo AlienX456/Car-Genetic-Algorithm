@@ -18,4 +18,4 @@ class RoadGenerator:
 
     def get_road_initial_position(self, number_of_road: RoadEnum) -> [int, int]:
         if number_of_road == RoadEnum.ONE:
-            return self.surface_width / 2, self.surface_height * 0.1
+            return self.surface_width / 2, self.surface_height * 0.15
