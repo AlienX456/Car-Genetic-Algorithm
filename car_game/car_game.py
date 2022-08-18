@@ -44,13 +44,6 @@ class CarGame:
 
         while not exit_game:
 
-            # DRAW MAP
-            self.screen.fill(GRAY)
-            map_sprite = Sprite()
-            map_sprite.rect = Rect(0, 0, self.screen_size[0], self.screen_size[1])
-            map_sprite.image = map_surface
-            map_mask = pygame.mask.from_surface(map_surface)
-
             # VALIDATE EVENTS
 
             rotate_result = 0
@@ -64,7 +57,7 @@ class CarGame:
                         rotate_result = -5
             current_angle += rotate_result
 
-            # DRAW CAR WITH ITS NEW SPEED AND ANGLE
+            # SET CAR NEW SPEED AND ANGLE
 
             speed_in_x, speed_in_y = self.__calculate_speed(current_angle)
             # print(f'{current_angle} {speed_in_x} {speed_in_y}')
@@ -78,6 +71,10 @@ class CarGame:
 
             # DETECT COLLISION BETWEEN CAR AND GRASS
 
+            map_sprite = Sprite()
+            map_sprite.rect = Rect(0, 0, self.screen_size[0], self.screen_size[1])
+            map_sprite.image = map_surface
+
             player_sprite = Sprite()
             player_sprite.rect = player_rect
             player_sprite.image = player_image_1_rot
@@ -85,13 +82,14 @@ class CarGame:
             print(pygame.sprite.collide_mask(map_sprite, player_sprite))
 
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
+
+            self.screen.fill(GRAY)
             self.screen.blit(map_surface, map_sprite.rect)
             self.screen.blit(player_image_1_rot, player_rect)
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
 
         pygame.quit()
-
 
     def __calculate_speed(self, angle) -> Tuple[int, int]:
         speed_x = 0 if math.cos(angle) == 0 else self.car_speed * math.cos(math.radians(angle))
