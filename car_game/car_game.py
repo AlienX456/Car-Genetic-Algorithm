@@ -3,7 +3,7 @@ from typing import Tuple
 from car_game.road_generator import RoadGenerator
 from car_game.road_enum import RoadEnum
 from pygame import Rect
-from car_game.pygame_shapes.arc import Arc
+from pygame.mask import Mask
 import math
 
 # COLORS
@@ -18,14 +18,14 @@ class CarGame:
 
     def __init__(self, screen_size: Tuple[int, int], car_speed: int,
                  number_of_cars: int, frame_rate: int,
-                 road: RoadEnum, road_width):
+                 road: RoadEnum):
         pygame.init()
         self.car_speed = car_speed
         self.screen = pygame.display.set_mode(screen_size)
         self.screen_size = screen_size
         self.number_of_cars = number_of_cars
         self.road = road
-        self.road_generator = RoadGenerator(screen_size, road_width)
+        self.road_generator = RoadGenerator(screen_size)
         self.clock = pygame.time.Clock()
         self.frame_rate = frame_rate
 
@@ -40,11 +40,14 @@ class CarGame:
         player_image_rotated = pygame.transform.scale(image, (self.screen_size[0] * 0.0625, self.screen_size[1] * 0.05))
         player_image_1 = pygame.transform.rotate(player_image_rotated, -180)
 
+        map_surface = self.road_generator.get_road_image(self.road)
+
         while not exit_game:
 
             # DRAW MAP
             self.screen.fill(GREEN)
-            self.__draw_road()
+            self.screen.blit(map_surface, Rect(0, 0, self.screen_size[0], self.screen_size[1]))
+            map_mask = pygame.mask.from_surface(map_surface)
 
             # VALIDATE EVENTS
 
@@ -62,31 +65,24 @@ class CarGame:
             # DRAW CAR WITH ITS NEW SPEED AND ANGLE
 
             speed_in_x, speed_in_y = self.__calculate_speed(current_angle)
-            print(f'{current_angle} {speed_in_x} {speed_in_y}')
+            # print(f'{current_angle} {speed_in_x} {speed_in_y}')
             car_current_position_x += speed_in_x
             car_current_position_y -= speed_in_y
 
-            player_image_1_rot, rect = self.__rot_center(player_image_1,
-                                                         current_angle,
-                                                         car_current_position_x,
-                                                         car_current_position_y)
-            self.screen.blit(player_image_1_rot, rect)
+            player_image_1_rot, player_rect = self.__rot_center(player_image_1,
+                                                                current_angle,
+                                                                car_current_position_x,
+                                                                car_current_position_y)
+
+            self.screen.blit(player_image_1_rot, player_rect)
+
+            print(pygame.Rect.colliderect(self.screen.get_rect(), player_rect))
 
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
 
         pygame.quit()
 
-    def __draw_road(self):
-
-        shapes = self.road_generator.get_road_shapes(self.road)
-
-        for shape in shapes:
-
-            if isinstance(shape, Rect):
-                pass
-            elif isinstance(shape, Arc):
-                pygame.draw.arc(self.screen, GRAY, shape.rect, shape.start_angle, shape.stop_angle, shape.arc_width)
 
     def __calculate_speed(self, angle) -> Tuple[int, int]:
         speed_x = 0 if math.cos(angle) == 0 else self.car_speed * math.cos(math.radians(angle))
