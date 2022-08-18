@@ -3,7 +3,7 @@ from typing import Tuple
 from car_game.road_generator import RoadGenerator
 from car_game.road_enum import RoadEnum
 from pygame import Rect
-from pygame.mask import Mask
+from pygame.sprite import Sprite
 import math
 
 # COLORS
@@ -46,7 +46,10 @@ class CarGame:
 
             # DRAW MAP
             self.screen.fill(GREEN)
-            self.screen.blit(map_surface, Rect(0, 0, self.screen_size[0], self.screen_size[1]))
+            map_sprite = Sprite()
+            map_sprite.rect = Rect(0, 0, self.screen_size[0], self.screen_size[1])
+            map_sprite.image = map_surface
+            self.screen.blit(map_surface, map_sprite.rect)
             map_mask = pygame.mask.from_surface(map_surface)
 
             # VALIDATE EVENTS
@@ -73,6 +76,12 @@ class CarGame:
                                                                 current_angle,
                                                                 car_current_position_x,
                                                                 car_current_position_y)
+
+            player_sprite = Sprite()
+            player_sprite.rect = player_rect
+            player_sprite.image = player_image_1_rot
+
+            print(pygame.sprite.collide_mask(map_sprite, player_sprite))
 
             self.screen.blit(player_image_1_rot, player_rect)
 
