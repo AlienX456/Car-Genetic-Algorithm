@@ -13,7 +13,7 @@ WHITE = (255, 255, 255)
 GRAY = (139, 139, 139)
 GREEN = (24, 107, 24)
 RED = (240, 34, 34)
-SENSOR_LINE_WIDTH = 20
+SENSOR_LINE_WIDTH = 5
 CAR_SPRITE_LOCATION = 'car_game/images/car.png'
 
 
@@ -83,7 +83,8 @@ class CarGame:
             player_sprite.rect = player_rect
             player_sprite.image = player_image_1_rot
 
-            sensor_surface, surface_rect = self.__get_sensor_collision_distance((car_current_position_x, car_current_position_y), current_angle, map_sprite)
+            sensor_surface, surface_rect = self.__get_sensor_collision_vector(
+                (car_current_position_x, car_current_position_y), current_angle, map_sprite)
 
             # print(pygame.sprite.collide_mask(map_sprite, player_sprite))
 
@@ -113,14 +114,21 @@ class CarGame:
         new_rect = rotated_image.get_rect(center=image.get_rect(center=(x, y)).center)
         return rotated_image, new_rect
 
-    def __get_sensor_collision_distance(self, car_position: [int, int], car_sensor_angle: int, map_sprite: Sprite) -> Tuple[Surface, Rect]:
-        sensor_surface = Surface((self.sensor_threshold, self.sensor_threshold*0.05))
-        sensor_rect = Rect(0, self.sensor_threshold/2, self.sensor_threshold, self.sensor_threshold/2)
-        pygame.draw.rect(sensor_surface, RED, sensor_rect, SENSOR_LINE_WIDTH)
-        surface_rect = Rect(car_position[0], car_position[1], self.sensor_threshold, self.sensor_threshold)
-        sensor_surface.fill(RED)
+    def __get_sensor_collision_vector(self, car_position: [int, int], car_sensor_angle: int, map_sprite: Sprite) -> Tuple[Surface, Rect]:
+        sensor_surface = Surface((self.sensor_threshold, self.sensor_threshold), pygame.SRCALPHA)
+        # sensor_surface.fill(BLACK)
+        pygame.draw.line(sensor_surface, RED,
+                         (self.sensor_threshold/2, self.sensor_threshold/2),
+                         (self.sensor_threshold, self.sensor_threshold/2),
+                         SENSOR_LINE_WIDTH)
+
+
+        rotated_image = pygame.transform.rotate(sensor_surface, car_sensor_angle)
+        rotated_rect = rotated_image.get_rect(
+            center=rotated_image.get_rect(center=(car_position[0], car_position[1])).center)
+
         sensor_sprite = Sprite()
-        sensor_sprite.rect = surface_rect
-        sensor_sprite.image = sensor_surface
+        sensor_sprite.rect = rotated_rect
+        sensor_sprite.image = rotated_image
         print(f'sensor collision {pygame.sprite.collide_mask(map_sprite, sensor_sprite)}')
-        return sensor_surface, surface_rect
+        return rotated_image, rotated_rect
