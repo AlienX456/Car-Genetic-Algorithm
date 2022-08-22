@@ -20,14 +20,12 @@ MIDDLE_SENSOR_ANGLE = 60
 
 class CarGame:
 
-    def __init__(self, screen_size: Tuple[int, int], car_speed: int,
-                 number_of_cars: int, frame_rate: int,
+    def __init__(self, screen_size: Tuple[int, int], car_speed: int, frame_rate: int,
                  road: RoadEnum, sensor_threshold: int):
         pygame.init()
         self.car_speed = car_speed
         self.screen = pygame.display.set_mode(screen_size)
         self.screen_size = screen_size
-        self.number_of_cars = number_of_cars
         self.road = road
         self.road_generator = RoadGenerator(screen_size)
         self.clock = pygame.time.Clock()
@@ -80,10 +78,6 @@ class CarGame:
             map_sprite.rect = Rect(0, 0, self.screen_size[0], self.screen_size[1])
             map_sprite.image = map_surface
 
-            player_sprite = Sprite()
-            player_sprite.rect = player_rect
-            player_sprite.image = player_image_1_rot
-
             # COLLISION VECTORS
 
             sensor_surface_vector_0, surface_rect_vector_0, collision_distance_vector_0 = \
@@ -99,8 +93,6 @@ class CarGame:
             sensor_surface_vector_minus_middle, surface_rect_vector_minus_middle, collision_distance_vector_minus_middle = \
                 self.__get_sensor_collision_vector(
                 (car_current_position_x, car_current_position_y), current_angle-MIDDLE_SENSOR_ANGLE, map_sprite)
-
-            # print(pygame.sprite.collide_mask(map_sprite, player_sprite))
 
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
 
