@@ -31,6 +31,9 @@ class CarGame:
         self.clock = pygame.time.Clock()
         self.frame_rate = frame_rate
         self.sensor_threshold = sensor_threshold
+        self.distance_sensor_1 = -1
+        self.distance_sensor_2 = -1
+        self.distance_sensor_3 = -1
 
     def start_game(self):
 
@@ -80,17 +83,15 @@ class CarGame:
 
             # COLLISION VECTORS
 
-            sensor_surface_vector_0, surface_rect_vector_0, collision_distance_vector_0 = \
+            sensor_surface_vector_0, surface_rect_vector_0, self.distance_sensor_1 = \
                 self.__get_sensor_collision_vector(
                 (car_current_position_x, car_current_position_y), current_angle, map_sprite)
 
-            print(f'sensor collision {collision_distance_vector_0}')
-
-            sensor_surface_vector_middle, surface_rect_vector_middle, collision_distance_vector_middle = \
+            sensor_surface_vector_middle, surface_rect_vector_middle, self.distance_sensor_2 = \
                 self.__get_sensor_collision_vector(
                 (car_current_position_x, car_current_position_y), current_angle+MIDDLE_SENSOR_ANGLE, map_sprite)
 
-            sensor_surface_vector_minus_middle, surface_rect_vector_minus_middle, collision_distance_vector_minus_middle = \
+            sensor_surface_vector_minus_middle, surface_rect_vector_minus_middle, self.distance_sensor_3 = \
                 self.__get_sensor_collision_vector(
                 (car_current_position_x, car_current_position_y), current_angle-MIDDLE_SENSOR_ANGLE, map_sprite)
 
