@@ -5,7 +5,9 @@ from car_game.road_enum import RoadEnum
 from pygame import Rect
 from pygame.sprite import Sprite
 from pygame import Surface
+import pandas
 import math
+from datetime import datetime
 
 # COLORS
 BLACK = (0, 0, 0)
@@ -21,7 +23,7 @@ MIDDLE_SENSOR_ANGLE = 60
 class CarGame:
 
     def __init__(self, screen_size: Tuple[int, int], car_speed: int, frame_rate: int,
-                 road: RoadEnum, sensor_threshold: int):
+                 road: RoadEnum, sensor_threshold: int, generate_train_data=False):
         pygame.init()
         self.car_speed = car_speed
         self.screen = pygame.display.set_mode(screen_size)
@@ -34,6 +36,7 @@ class CarGame:
         self.distance_sensor_1 = -1
         self.distance_sensor_2 = -1
         self.distance_sensor_3 = -1
+        self.generate_train_data = generate_train_data
 
     def start_game(self):
 
@@ -48,7 +51,12 @@ class CarGame:
 
         map_surface = self.road_generator.get_road_image(self.road)
 
+        train_data_df = pandas.DataFrame(columns=['i_sensor_1', 'i_sensor_2', 'i_sensor_3', 'o_left', 'o_right'])
+
         while not exit_game:
+
+            was_left_key_pressed = False
+            was_right_key_pressed = False
 
             # VALIDATE EVENTS
 
@@ -58,8 +66,10 @@ class CarGame:
                     exit_game = True
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
+                        was_left_key_pressed = True
                         rotate_result = 5
                     if event.key == pygame.K_RIGHT:
+                        was_right_key_pressed = True
                         rotate_result = -5
             current_angle += rotate_result
 
@@ -95,6 +105,18 @@ class CarGame:
                 self.__get_sensor_collision_vector(
                 (car_current_position_x, car_current_position_y), current_angle-MIDDLE_SENSOR_ANGLE, map_sprite)
 
+            # GENERATE TRAIN DATA
+
+            if self.generate_train_data:
+                train_data_dict = {'i_sensor_1': self.distance_sensor_1,
+                                   'i_sensor_2': self.distance_sensor_2,
+                                   'i_sensor_3': self.distance_sensor_3,
+                                   'o_left': was_left_key_pressed,
+                                   'o_right': was_right_key_pressed
+                                   }
+                train_data_df = pandas.concat([train_data_df, pandas.DataFrame([train_data_dict])], sort=False)
+
+
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
 
             self.screen.fill(GRAY)
@@ -106,6 +128,8 @@ class CarGame:
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
 
+        if self.generate_train_data:
+            train_data_df.to_csv(f'training_data_{datetime.now().strftime("%m-%d-%Y-%H-%M-%S")}.csv')
         pygame.quit()
 
     def __calculate_speed(self, angle) -> Tuple[int, int]:
