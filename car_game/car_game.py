@@ -37,6 +37,7 @@ class CarGame:
         self.distance_sensor_2 = -1
         self.distance_sensor_3 = -1
         self.generate_train_data = generate_train_data
+        self.game_over = False
 
     def start_game(self):
 
@@ -128,6 +129,7 @@ class CarGame:
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
 
+        self.game_over = True
         if self.generate_train_data:
             train_data_df.to_csv(f'training_data_{datetime.now().strftime("%m-%d-%Y-%H-%M-%S")}.csv')
         pygame.quit()
