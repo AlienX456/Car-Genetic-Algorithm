@@ -8,6 +8,8 @@ from pygame import Surface
 import pandas
 import math
 from datetime import datetime
+from tensorflow.keras.models import Sequential
+import numpy as np
 
 # COLORS
 BLACK = (0, 0, 0)
@@ -23,7 +25,7 @@ MIDDLE_SENSOR_ANGLE = 60
 class CarGame:
 
     def __init__(self, screen_size: Tuple[int, int], car_speed: int, frame_rate: int,
-                 road: RoadEnum, sensor_threshold: int, generate_train_data=False):
+                 road: RoadEnum, sensor_threshold: int, generate_train_data, nn_model: Sequential):
         pygame.init()
         self.car_speed = car_speed
         self.screen = pygame.display.set_mode(screen_size)
@@ -37,6 +39,7 @@ class CarGame:
         self.distance_sensor_2 = -1
         self.distance_sensor_3 = -1
         self.generate_train_data = generate_train_data
+        self.nn_model = nn_model
         self.game_over = False
 
     def start_game(self):
@@ -62,16 +65,31 @@ class CarGame:
             # VALIDATE EVENTS
 
             rotate_result = 0
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    exit_game = True
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        was_left_key_pressed = True
-                        rotate_result = 5
-                    if event.key == pygame.K_RIGHT:
-                        was_right_key_pressed = True
-                        rotate_result = -5
+            if self.generate_train_data:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        exit_game = True
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_LEFT:
+                            was_left_key_pressed = True
+                            rotate_result = 5
+                        if event.key == pygame.K_RIGHT:
+                            was_right_key_pressed = True
+                            rotate_result = -5
+            else:
+                input_model = np.array(
+                    [[self.distance_sensor_1, self.distance_sensor_2, self.distance_sensor_3]])
+                prediction = self.nn_model.predict(input_model)
+
+                print(prediction)
+
+                if prediction[0][0] >= 0.5:
+                    print('left')
+                    rotate_result = 5
+                elif prediction[0][1] >= 0.5:
+                    print('right')
+                    rotate_result = -5
+
             current_angle += rotate_result
 
             # SET CAR NEW SPEED AND ANGLE
