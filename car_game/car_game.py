@@ -58,6 +58,9 @@ class CarGame:
         player_image_1 = pygame.transform.rotate(player_image_rotated, -180)
 
         map_surface = self.road_generator.get_road_image(self.road)
+        map_sprite = Sprite()
+        map_sprite.rect = map_surface.get_rect()
+        map_sprite.image = map_surface
 
         train_data_df = pandas.DataFrame(columns=['i_sensor_1', 'i_sensor_2', 'i_sensor_3', 'o_left', 'o_right'])
 
@@ -85,7 +88,8 @@ class CarGame:
 
             if not self.generate_train_data:
                 input_model = np.array(
-                    [[self.distance_sensor_1, self.distance_sensor_2, self.distance_sensor_3, self.distance_sensor_4, self.distance_sensor_5]])
+                    [[self.distance_sensor_1, self.distance_sensor_2, self.distance_sensor_3, self.distance_sensor_4,
+                      self.distance_sensor_5]])
                 prediction = self.nn_model.predict(input_model)
                 if prediction[0][0] >= 0.9:
                     rotate_result = 5
@@ -108,31 +112,32 @@ class CarGame:
 
             # DETECT COLLISION BETWEEN CAR AND GRASS
 
-            map_sprite = Sprite()
-            map_sprite.rect = map_surface.get_rect()
-            map_sprite.image = map_surface
-
             # COLLISION VECTORS
 
             sensor_surface_vector_0, surface_rect_vector_0, self.distance_sensor_1, collision_point_1 = \
                 self.__get_sensor_collision_vector(
-                (car_current_position_x, car_current_position_y), current_angle, map_sprite)
+                    (car_current_position_x, car_current_position_y), current_angle, map_sprite,
+                    self.sensor_threshold * 2)
 
             sensor_surface_vector_middle, surface_rect_vector_middle, self.distance_sensor_2, collision_point_2 = \
                 self.__get_sensor_collision_vector(
-                (car_current_position_x, car_current_position_y), current_angle+MIDDLE_SENSOR_ANGLE, map_sprite)
+                    (car_current_position_x, car_current_position_y), current_angle + MIDDLE_SENSOR_ANGLE, map_sprite,
+                    self.sensor_threshold)
 
             sensor_surface_vector_minus_middle, surface_rect_vector_minus_middle, self.distance_sensor_3, collision_point_3 = \
                 self.__get_sensor_collision_vector(
-                (car_current_position_x, car_current_position_y), current_angle-MIDDLE_SENSOR_ANGLE, map_sprite)
+                    (car_current_position_x, car_current_position_y), current_angle - MIDDLE_SENSOR_ANGLE, map_sprite,
+                    self.sensor_threshold)
 
             sensor_surface_vector_rect, surface_rect_vector_rect, self.distance_sensor_4, collision_point_4 = \
                 self.__get_sensor_collision_vector(
-                (car_current_position_x, car_current_position_y), current_angle+RECT_SENSOR_ANGLE, map_sprite)
+                    (car_current_position_x, car_current_position_y), current_angle + RECT_SENSOR_ANGLE, map_sprite,
+                    self.sensor_threshold)
 
             sensor_surface_vector_minus_rect, surface_rect_vector_minus_rect, self.distance_sensor_5, collision_point_5 = \
                 self.__get_sensor_collision_vector(
-                (car_current_position_x, car_current_position_y), current_angle-RECT_SENSOR_ANGLE, map_sprite)
+                    (car_current_position_x, car_current_position_y), current_angle - RECT_SENSOR_ANGLE, map_sprite,
+                    self.sensor_threshold)
 
             # GENERATE TRAIN DATA
 
@@ -150,11 +155,11 @@ class CarGame:
             # PRINT SENSOR
             os.system('clear')
             print({'i_sensor_1': self.distance_sensor_1,
-                               'i_sensor_2': self.distance_sensor_2,
-                               'i_sensor_3': self.distance_sensor_3,
-                               'i_sensor_4': self.distance_sensor_4,
-                               'i_sensor_5': self.distance_sensor_5,
-                               })
+                   'i_sensor_2': self.distance_sensor_2,
+                   'i_sensor_3': self.distance_sensor_3,
+                   'i_sensor_4': self.distance_sensor_4,
+                   'i_sensor_5': self.distance_sensor_5,
+                   })
 
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
 
@@ -194,16 +199,15 @@ class CarGame:
         new_rect = rotated_image.get_rect(center=image.get_rect(center=(x, y)).center)
         return rotated_image, new_rect
 
-    def __get_sensor_collision_vector(self, car_position: [int, int], car_sensor_angle: int, map_sprite: Sprite) \
+    def __get_sensor_collision_vector(self, car_position: [int, int], car_sensor_angle: int, map_sprite: Sprite,
+                                      sensor_threshold: int) \
             -> Tuple[Surface, Rect, int, Tuple[int, int]]:
-        sensor_surface = Surface((self.sensor_threshold, self.sensor_threshold), pygame.SRCALPHA)
-
+        sensor_surface = Surface((sensor_threshold, sensor_threshold), pygame.SRCALPHA)
 
         pygame.draw.line(sensor_surface, RED,
-                         (self.sensor_threshold/2, self.sensor_threshold/2),
-                         (self.sensor_threshold, self.sensor_threshold/2),
+                         (sensor_threshold / 2, sensor_threshold / 2),
+                         (sensor_threshold, sensor_threshold / 2),
                          SENSOR_LINE_WIDTH)
-
 
         rotated_image = pygame.transform.rotate(sensor_surface, car_sensor_angle)
         rotated_rect = rotated_image.get_rect(
@@ -219,8 +223,8 @@ class CarGame:
 
         if collision_point:
             distance_from_collision = CarGame.get_euclidean_distance(
-               collision_point,
-               (car_position[0], car_position[1])
+                collision_point,
+                (car_position[0], car_position[1])
             )
         return rotated_image, rotated_rect, distance_from_collision, collision_point
 
@@ -228,4 +232,4 @@ class CarGame:
     def get_euclidean_distance(point_1: Tuple[int, int], point_2: Tuple[int, int]) -> int:
         square_x = math.pow((point_1[0] - point_2[0]), 2)
         square_y = math.pow((point_1[1] - point_2[1]), 2)
-        return round(math.sqrt(square_x+square_y))
+        return round(math.sqrt(square_x + square_y))

@@ -4,7 +4,7 @@ from car_game.road_enum import RoadEnum
 
 def main():
     car_game = CarGame(screen_size=(1600, 1200), car_speed=5, frame_rate=60,
-                       road=RoadEnum.ONE, sensor_threshold=600, generate_train_data=True, nn_model=None)
+                       road=RoadEnum.ONE, sensor_threshold=250, generate_train_data=True, nn_model=None)
 
     car_game.start_game()
 
