@@ -69,26 +69,27 @@ class CarGame:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     exit_game = True
-                if self.generate_train_data:
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_LEFT:
-                            was_left_key_pressed = True
-                            rotate_result = 5
-                        if event.key == pygame.K_RIGHT:
-                            was_right_key_pressed = True
-                            rotate_result = -5
+
+            if self.generate_train_data:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_LEFT]:
+                    was_left_key_pressed = True
+                    rotate_result = 5
+                if keys[pygame.K_RIGHT]:
+                    was_right_key_pressed = True
+                    rotate_result = -5
 
             if not self.generate_train_data:
                 input_model = np.array(
                     [[self.distance_sensor_1, self.distance_sensor_2, self.distance_sensor_3]])
                 prediction = self.nn_model.predict(input_model)
+                print(prediction)
                 if prediction[0][0] >= 0.80:
                     print('left')
                     rotate_result = 5
                 elif prediction[0][1] >= 0.80:
                     print('right')
                     rotate_result = -5
-
 
             current_angle += rotate_result
 
