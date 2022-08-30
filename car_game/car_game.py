@@ -227,7 +227,7 @@ class CarGame:
                 (car_position[0], car_position[1])
             )
         else:
-            distance_from_collision = self.sensor_threshold
+            distance_from_collision = sensor_threshold
 
         return rotated_image, rotated_rect, distance_from_collision, collision_point
 
