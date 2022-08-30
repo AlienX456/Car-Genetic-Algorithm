@@ -31,7 +31,7 @@ class RoadGenerator:
         if number_of_road == RoadEnum.TWO:
             return self.surface_width / 2 - 150, self.surface_height * 0.04
         if number_of_road == RoadEnum.THREE:
-            return self.surface_width / 2 - 500, self.surface_height * 0.12
+            return self.surface_width / 2 - 100, self.surface_height * 0.90
         if number_of_road == RoadEnum.FOUR:
             return self.surface_width / 2 - 650, self.surface_height * 0.12
 
