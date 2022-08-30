@@ -91,9 +91,9 @@ class CarGame:
                     [[self.distance_sensor_1, self.distance_sensor_2, self.distance_sensor_3, self.distance_sensor_4,
                       self.distance_sensor_5]])
                 prediction = self.nn_model.predict(input_model)
-                if prediction[0][0] >= 0.9:
+                if prediction[0][0] >= 0.95:
                     rotate_result = 5
-                elif prediction[0][1] >= 0.9:
+                elif prediction[0][1] >= 0.95:
                     rotate_result = -5
 
             current_angle += rotate_result
@@ -117,7 +117,7 @@ class CarGame:
             sensor_surface_vector_0, surface_rect_vector_0, self.distance_sensor_1, collision_point_1 = \
                 self.__get_sensor_collision_vector(
                     (car_current_position_x, car_current_position_y), current_angle, map_sprite,
-                    self.sensor_threshold * 2)
+                    self.sensor_threshold * 3)
 
             sensor_surface_vector_middle, surface_rect_vector_middle, self.distance_sensor_2, collision_point_2 = \
                 self.__get_sensor_collision_vector(
@@ -226,6 +226,9 @@ class CarGame:
                 collision_point,
                 (car_position[0], car_position[1])
             )
+        else:
+            distance_from_collision = self.sensor_threshold
+
         return rotated_image, rotated_rect, distance_from_collision, collision_point
 
     @staticmethod
