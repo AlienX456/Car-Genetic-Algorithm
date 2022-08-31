@@ -16,14 +16,15 @@ class RoadGenerator:
         self.surface_height = surface_size[1]
 
     def get_road_image(self, number_of_road: RoadEnum) -> Surface:
-        if number_of_road == RoadEnum.ONE:
-            return pygame.image.load(ROAD_ONE_LOCATION)
-        elif number_of_road == RoadEnum.TWO:
-            return pygame.image.load(ROAD_TWO_LOCATION)
+        if number_of_road == RoadEnum.TWO:
+            game_map = pygame.image.load(ROAD_TWO_LOCATION)
         elif number_of_road == RoadEnum.THREE:
-            return pygame.image.load(ROAD_THREE_LOCATION)
+            game_map = pygame.image.load(ROAD_THREE_LOCATION)
         elif number_of_road == RoadEnum.FOUR:
-            return pygame.image.load(ROAD_FOUR_LOCATION)
+            game_map = pygame.image.load(ROAD_FOUR_LOCATION)
+        else:
+            game_map = pygame.image.load(ROAD_ONE_LOCATION)
+        return pygame.transform.scale(game_map, (self.surface_width, self.surface_height))
 
     def get_road_initial_position(self, number_of_road: RoadEnum) -> [int, int]:
         if number_of_road == RoadEnum.ONE:
