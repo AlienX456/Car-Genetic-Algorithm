@@ -27,7 +27,8 @@ RECT_SENSOR_ANGLE = 90
 class CarGame:
 
     def __init__(self, screen_size: Tuple[int, int], car_speed: int, frame_rate: int,
-                 road: RoadEnum, sensor_threshold: int, generate_train_data, nn_model: Sequential):
+                 road: RoadEnum, sensor_threshold: int, generate_train_data, nn_model: Sequential,
+                 probability_to_decide: float):
         pygame.init()
         self.car_speed = car_speed
         self.screen = pygame.display.set_mode(screen_size)
@@ -45,6 +46,7 @@ class CarGame:
         self.generate_train_data = generate_train_data
         self.nn_model = nn_model
         self.game_over = False
+        self.probability_to_decide = probability_to_decide
 
     def start_game(self):
 
@@ -91,9 +93,9 @@ class CarGame:
                     [[self.distance_sensor_1, self.distance_sensor_2, self.distance_sensor_3, self.distance_sensor_4,
                       self.distance_sensor_5]])
                 prediction = self.nn_model.predict(input_model)
-                if prediction[0][0] >= 0.95:
+                if prediction[0][0] >= self.probability_to_decide:
                     rotate_result = 5
-                elif prediction[0][1] >= 0.95:
+                elif prediction[0][1] >= self.probability_to_decide:
                     rotate_result = -5
 
             current_angle += rotate_result
