@@ -13,9 +13,6 @@ class Sensor:
         """ Returns the position of the sensor according to the car position
         and the distance traveled by the sensor and its angle """
 
-        if car_current_angle > 360:
-            raise Exception('Angle not allowed')
-
         sensor_angle_respect_world = car_current_angle + self.angle
 
         # Respect world is calculated respect to the screen or map
@@ -24,7 +21,7 @@ class Sensor:
 
         # Respect car means that the position of sensor is calculated as the car were on position (0,0)
         y_respect_car = distance_traveled_by_sensor * math.sin(math.radians(sensor_angle_respect_world))
-        x_respect_car = distance_traveled_by_sensor * math.sin(math.radians(sensor_angle_respect_world))
+        x_respect_car = distance_traveled_by_sensor * math.cos(math.radians(sensor_angle_respect_world))
 
         if sensor_angle_respect_world >= 90:
             x_respect_world = car_current_position[0] - x_respect_car

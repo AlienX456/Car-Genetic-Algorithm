@@ -101,32 +101,7 @@ class CarGame:
 
             # DETECT COLLISION BETWEEN CAR AND GRASS
 
-            # COLLISION VECTORS
-
-            # sensor_surface_vector_0, surface_rect_vector_0, self.distance_sensor_1, collision_point_1 = \
-            #     self.__get_sensor_collision_vector(
-            #         (car_current_position_x, car_current_position_y), current_angle, map_sprite,
-            #         self.sensor_threshold * 3)
-            #
-            # sensor_surface_vector_middle, surface_rect_vector_middle, self.distance_sensor_2, collision_point_2 = \
-            #     self.__get_sensor_collision_vector(
-            #         (car_current_position_x, car_current_position_y), current_angle + MIDDLE_SENSOR_ANGLE, map_sprite,
-            #         self.sensor_threshold)
-            #
-            # sensor_surface_vector_minus_middle, surface_rect_vector_minus_middle, self.distance_sensor_3, collision_point_3 = \
-            #     self.__get_sensor_collision_vector(
-            #         (car_current_position_x, car_current_position_y), current_angle - MIDDLE_SENSOR_ANGLE, map_sprite,
-            #         self.sensor_threshold)
-            #
-            # sensor_surface_vector_rect, surface_rect_vector_rect, self.distance_sensor_4, collision_point_4 = \
-            #     self.__get_sensor_collision_vector(
-            #         (car_current_position_x, car_current_position_y), current_angle + RECT_SENSOR_ANGLE, map_sprite,
-            #         self.sensor_threshold)
-            #
-            # sensor_surface_vector_minus_rect, surface_rect_vector_minus_rect, self.distance_sensor_5, collision_point_5 = \
-            #     self.__get_sensor_collision_vector(
-            #         (car_current_position_x, car_current_position_y), current_angle - RECT_SENSOR_ANGLE, map_sprite,
-            #         self.sensor_threshold)
+            sensor_collision_point_list = self.__get_sensor_collision_vectors(car)
 
             # GENERATE TRAIN DATA
 
@@ -141,30 +116,14 @@ class CarGame:
             #                        }
             #     train_data_df = pandas.concat([train_data_df, pandas.DataFrame([train_data_dict])], sort=False)
             #
-            # # PRINT SENSOR
-            # os.system('clear')
-            # print({'i_sensor_1': self.distance_sensor_1,
-            #        'i_sensor_2': self.distance_sensor_2,
-            #        'i_sensor_3': self.distance_sensor_3,
-            #        'i_sensor_4': self.distance_sensor_4,
-            #        'i_sensor_5': self.distance_sensor_5,
-            #        })
 
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
 
             self.screen.fill(GRAY)
             self.screen.blit(map_surface, map_surface.get_rect())
             self.screen.blit(car_rotated_surface, player_rect)
-            # self.screen.blit(sensor_surface_vector_0, surface_rect_vector_0)
-            # self.screen.blit(sensor_surface_vector_middle, surface_rect_vector_middle)
-            # self.screen.blit(sensor_surface_vector_minus_middle, surface_rect_vector_minus_middle)
-            # self.screen.blit(sensor_surface_vector_minus_rect, surface_rect_vector_minus_rect)
-            # self.screen.blit(sensor_surface_vector_rect, surface_rect_vector_rect)
-            # pygame.draw.circle(self.screen, BLACK, collision_point_1, 10) if collision_point_1 else ''
-            # pygame.draw.circle(self.screen, BLACK, collision_point_2, 10) if collision_point_2 else ''
-            # pygame.draw.circle(self.screen, BLACK, collision_point_3, 10) if collision_point_3 else ''
-            # pygame.draw.circle(self.screen, BLACK, collision_point_4, 10) if collision_point_4 else ''
-            # pygame.draw.circle(self.screen, BLACK, collision_point_5, 10) if collision_point_5 else ''
+            for sensor_collision_point in sensor_collision_point_list:
+                pygame.draw.line(self.screen, RED, car.current_position, sensor_collision_point, 10)
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
 
@@ -188,10 +147,11 @@ class CarGame:
         new_rect = rotated_image.get_rect(center=image.get_rect(center=(x, y)).center)
         return rotated_image, new_rect
 
-    def __get_sensor_collision_vectors(self, car_position: [int, int], car_sensor_angle: [int], map_sprite: Sprite,
-                                       sensor_threshold: int) \
-            -> Tuple[Surface, Rect, int, Tuple[int, int]]:
-        pass
+    def __get_sensor_collision_vectors(self, car: Car) -> [Tuple[int, int]]:
+        sensor_positions = []
+        for i in range(0, self.sensor_threshold):
+            sensor_positions = car.calculate_sensors_positions_respect_world(i)
+        return sensor_positions
 
     def get_car_rotated_surface(self, car: Car):
         return self.__rot_center(car.image_surface,

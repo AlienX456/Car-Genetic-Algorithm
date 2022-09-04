@@ -26,3 +26,4 @@ class Car:
                 self.angle,
                 distance_traveled_by_sensor
             ))
+        return sensor_positions
