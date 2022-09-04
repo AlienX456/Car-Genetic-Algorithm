@@ -19,19 +19,10 @@ class Sensor:
         if sensor_angle_respect_world > 360:
             sensor_angle_respect_world -= 360
 
+
         # Respect car means that the position of sensor is calculated as the car were on position (0,0)
-        y_respect_car = distance_traveled_by_sensor * math.sin(math.radians(sensor_angle_respect_world))
-        x_respect_car = distance_traveled_by_sensor * math.cos(math.radians(sensor_angle_respect_world))
-
-        if sensor_angle_respect_world >= 90:
-            x_respect_world = car_current_position[0] - x_respect_car
-        else:
-            x_respect_world = car_current_position[0] + x_respect_car
-
-        if 45 <= sensor_angle_respect_world <= 180:
-            y_respect_world = car_current_position[1] - y_respect_car
-        else:
-            y_respect_world = car_current_position[1] + y_respect_car
+        y_respect_world = distance_traveled_by_sensor * math.cos(math.radians(sensor_angle_respect_world)) + car_current_position[1]
+        x_respect_world = distance_traveled_by_sensor * math.sin(math.radians(sensor_angle_respect_world)) + car_current_position[0]
 
         return int(x_respect_world), int(y_respect_world)
 
