@@ -5,21 +5,16 @@ from car_game.Car import Car
 from car_game.CarFactory import CarFactory
 from car_game.road_generator import RoadGenerator
 from car_game.road_enum import RoadEnum
-from pygame import Rect
-from pygame.sprite import Sprite
-from pygame import Surface
 import pandas
 import math
 from datetime import datetime
 from tensorflow.keras.models import Sequential
-import numpy as np
-import os
 
 # COLORS
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (139, 139, 139)
-GREEN = (24, 107, 24)
+GREEN = (24, 107, 24, 255)
 RED = (240, 34, 34)
 SENSOR_LINE_WIDTH = 5
 MIDDLE_SENSOR_ANGLE = 60
@@ -72,12 +67,16 @@ class CarGame:
                 if event.type == pygame.QUIT:
                     exit_game = True
 
+            was_left_key_pressed = False
+            was_right_key_pressed = False
             if self.generate_train_data:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_LEFT]:
                     rotate_result = 5
+                    was_left_key_pressed = True
                 if keys[pygame.K_RIGHT]:
                     rotate_result = -5
+                    was_right_key_pressed = True
 
             # if not self.generate_train_data:
             #     input_model = np.array(
@@ -95,7 +94,7 @@ class CarGame:
 
             speed_in_x, speed_in_y = self.__calculate_speed(car.angle)
 
-            car.current_position = (car.current_position[0]+speed_in_x, car.current_position[1] + speed_in_y)
+            car.current_position = (car.current_position[0] + speed_in_x, car.current_position[1] + speed_in_y)
 
             car_rotated_surface, player_rect = self.get_car_rotated_surface(car)
 
@@ -103,23 +102,29 @@ class CarGame:
 
             sensor_collision_point_list = self.__get_sensor_collision_vectors(car)
 
+            distance_from_collision_list = []
+            for sensor_collision_point in sensor_collision_point_list:
+                distance_from_collision_list.append(
+                    self.get_euclidean_distance(car.current_position, sensor_collision_point)
+                )
+
             # GENERATE TRAIN DATA
 
-            # if self.generate_train_data:
-            #     train_data_dict = {'i_sensor_1': self.distance_sensor_1,
-            #                        'i_sensor_2': self.distance_sensor_2,
-            #                        'i_sensor_3': self.distance_sensor_3,
-            #                        'i_sensor_4': self.distance_sensor_4,
-            #                        'i_sensor_5': self.distance_sensor_5,
-            #                        'o_left': was_left_key_pressed,
-            #                        'o_right': was_right_key_pressed
-            #                        }
-            #     train_data_df = pandas.concat([train_data_df, pandas.DataFrame([train_data_dict])], sort=False)
-            #
+            if self.generate_train_data:
+                train_data_dict = {'i_sensor_1': distance_from_collision_list[0],
+                                   'i_sensor_2': distance_from_collision_list[1],
+                                   'i_sensor_3': distance_from_collision_list[2],
+                                   'i_sensor_4': distance_from_collision_list[3],
+                                   'i_sensor_5': distance_from_collision_list[4],
+                                   'o_left': was_left_key_pressed,
+                                   'o_right': was_right_key_pressed
+                                   }
+                train_data_df = pandas.concat([train_data_df, pandas.DataFrame([train_data_dict])], sort=False)
+
 
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
 
-            self.screen.fill(GRAY)
+            self.screen.fill(GREEN)
             self.screen.blit(map_surface, map_surface.get_rect())
             self.screen.blit(car_rotated_surface, player_rect)
             for sensor_collision_point in sensor_collision_point_list:
@@ -148,10 +153,19 @@ class CarGame:
         return rotated_image, new_rect
 
     def __get_sensor_collision_vectors(self, car: Car) -> [Tuple[int, int]]:
-        sensor_positions = []
+        sensor_collision_positions = {}
         for i in range(0, self.sensor_threshold):
             sensor_positions = car.calculate_sensors_positions_respect_world(i)
-        return sensor_positions
+            for j in range(0, len(sensor_positions)):
+                try:
+                    color_at_pixel = pygame.surface.Surface.get_at(self.screen, sensor_positions[j])
+                except Exception as e:
+                    color_at_pixel = GREEN
+
+                if (color_at_pixel == GREEN or i == self.sensor_threshold - 1) and not sensor_collision_positions.get(f'{j}'):
+                    sensor_collision_positions[f'{j}'] = sensor_positions[j]
+
+        return sensor_collision_positions.values()
 
     def get_car_rotated_surface(self, car: Car):
         return self.__rot_center(car.image_surface,

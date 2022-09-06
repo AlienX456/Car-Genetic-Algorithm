@@ -18,6 +18,9 @@ class Car:
             new_angle -= 360
         self.angle = new_angle
 
+    def get_car_number_sensors(self):
+        return len(self.sensor_list)
+
     def calculate_sensors_positions_respect_world(self, distance_traveled_by_sensor) -> [Tuple[int, int]]:
         sensor_positions = []
         for sensor in self.sensor_list:
