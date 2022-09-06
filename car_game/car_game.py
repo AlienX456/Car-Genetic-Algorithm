@@ -9,6 +9,7 @@ import pandas
 import math
 from datetime import datetime
 from tensorflow.keras.models import Sequential
+import numpy as np
 
 # COLORS
 BLACK = (0, 0, 0)
@@ -59,6 +60,9 @@ class CarGame:
 
         while not exit_game:
 
+            self.screen.fill(GREEN)
+            self.screen.blit(map_surface, map_surface.get_rect())
+
             # VALIDATE EVENTS
 
             rotate_result = 0
@@ -78,15 +82,15 @@ class CarGame:
                     rotate_result = -5
                     was_right_key_pressed = True
 
-            # if not self.generate_train_data:
-            #     input_model = np.array(
-            #         [[self.distance_sensor_1, self.distance_sensor_2, self.distance_sensor_3, self.distance_sensor_4,
-            #           self.distance_sensor_5]])
-            #     prediction = self.nn_model.predict(input_model)
-            #     if prediction[0][0] >= self.probability_to_decide:
-            #         rotate_result = 5
-            #     elif prediction[0][1] >= self.probability_to_decide:
-            #         rotate_result = -5
+            if not self.generate_train_data:
+                input_model = np.array(
+                    [[self.distance_sensor_1, self.distance_sensor_2, self.distance_sensor_3, self.distance_sensor_4,
+                      self.distance_sensor_5]])
+                prediction = self.nn_model.predict(input_model)
+                if prediction[0][0] >= self.probability_to_decide:
+                    rotate_result = 5
+                elif prediction[0][1] >= self.probability_to_decide:
+                    rotate_result = -5
 
             car.rotate_car(rotate_result)
 
@@ -123,9 +127,6 @@ class CarGame:
 
 
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
-
-            self.screen.fill(GREEN)
-            self.screen.blit(map_surface, map_surface.get_rect())
             self.screen.blit(car_rotated_surface, player_rect)
             for sensor_collision_point in sensor_collision_point_list:
                 pygame.draw.line(self.screen, RED, car.current_position, sensor_collision_point, 10)
