@@ -16,6 +16,8 @@ class Car:
         new_angle = self.angle + rotation_angle
         if new_angle >= 360:
             new_angle -= 360
+        elif new_angle < 0:
+            new_angle += 360
         self.angle = new_angle
 
     def get_car_number_sensors(self):
