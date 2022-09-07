@@ -76,21 +76,11 @@ class CarGame:
             if self.generate_train_data:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_LEFT]:
-                    rotate_result = 5
+                    rotate_result = 3
                     was_left_key_pressed = True
                 if keys[pygame.K_RIGHT]:
-                    rotate_result = -5
+                    rotate_result = -3
                     was_right_key_pressed = True
-
-            if not self.generate_train_data:
-                input_model = np.array(
-                    [[self.distance_sensor_1, self.distance_sensor_2, self.distance_sensor_3, self.distance_sensor_4,
-                      self.distance_sensor_5]])
-                prediction = self.nn_model.predict(input_model)
-                if prediction[0][0] >= self.probability_to_decide:
-                    rotate_result = 5
-                elif prediction[0][1] >= self.probability_to_decide:
-                    rotate_result = -5
 
             car.rotate_car(rotate_result)
 
@@ -112,9 +102,27 @@ class CarGame:
                     self.get_euclidean_distance(car.current_position, sensor_collision_point)
                 )
 
+            if not self.generate_train_data:
+                input_model = np.array(
+                    [[distance_from_collision_list[0],
+                      distance_from_collision_list[1],
+                      distance_from_collision_list[2],
+                      distance_from_collision_list[3],
+                      distance_from_collision_list[4]]])
+                prediction = self.nn_model.predict(input_model)
+                print(prediction)
+                if prediction[0][0] >= self.probability_to_decide:
+                    rotate_result = 3
+                elif prediction[0][1] >= self.probability_to_decide:
+                    rotate_result = -3
+
+            car.rotate_car(rotate_result)
+
+
             # GENERATE TRAIN DATA
 
             if self.generate_train_data:
+                print(distance_from_collision_list)
                 train_data_dict = {'i_sensor_1': distance_from_collision_list[0],
                                    'i_sensor_2': distance_from_collision_list[1],
                                    'i_sensor_3': distance_from_collision_list[2],
@@ -138,9 +146,10 @@ class CarGame:
             train_data_df.to_csv(f'training_data_{datetime.now().strftime("%m-%d-%Y-%H-%M-%S")}.csv')
         pygame.quit()
 
-    def __calculate_speed(self, angle) -> Tuple[int, int]:
-        speed_x = round(self.car_speed * math.sin(math.radians(angle)))
-        speed_y = round(self.car_speed * math.cos(math.radians(angle)))
+    def __calculate_speed(self, angle) -> Tuple[float, float]:
+        print(angle)
+        speed_x = self.car_speed * math.sin(math.radians(angle))
+        speed_y = self.car_speed * math.cos(math.radians(angle))
         return speed_x, speed_y
 
     def __rot_center(self, image, angle, x, y):
@@ -166,7 +175,7 @@ class CarGame:
                 if (color_at_pixel == GREEN or i == self.sensor_threshold - 1) and not sensor_collision_positions.get(f'{j}'):
                     sensor_collision_positions[f'{j}'] = sensor_positions[j]
 
-        return sensor_collision_positions.values()
+        return list(sensor_collision_positions.values())
 
     def get_car_rotated_surface(self, car: Car):
         return self.__rot_center(car.image_surface,
