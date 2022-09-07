@@ -185,7 +185,7 @@ class CarGame:
                                  )
 
     @staticmethod
-    def get_euclidean_distance(point_1: Tuple[int, int], point_2: Tuple[int, int]) -> int:
+    def get_euclidean_distance(point_1: Tuple[float, float], point_2: Tuple[float, float]) -> float:
         square_x = math.pow((point_1[0] - point_2[0]), 2)
         square_y = math.pow((point_1[1] - point_2[1]), 2)
         return round(math.sqrt(square_x + square_y))
