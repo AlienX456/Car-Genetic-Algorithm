@@ -11,6 +11,7 @@ class Car:
         self.current_position = car_position
         self.angle = angle
         self.image_surface = image_surface
+        self.sensor_collision_point_list = []
 
     def rotate_car(self, rotation_angle: int):
         new_angle = self.angle + rotation_angle

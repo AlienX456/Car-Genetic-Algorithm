@@ -45,11 +45,15 @@ class CarGame:
 
         image = pygame.image.load(CAR_SPRITE_LOCATION)
         car_image = pygame.transform.scale(image, (self.screen_size[0] * 0.03, self.screen_size[1] * 0.10))
-        car = CarFactory.build_five_sensor_car(
-            position=self.road_generator.get_road_initial_position(self.road),
-            angle=90,
-            image_surface=car_image
-        )
+
+        car_list = []
+
+        for i in range(0, 5):
+            car_list.append(CarFactory.build_five_sensor_car(
+                position=self.road_generator.get_road_initial_position(self.road),
+                angle=90,
+                image_surface=car_image
+            ))
 
         map_surface = self.road_generator.get_road_image(self.road)
 
@@ -68,78 +72,50 @@ class CarGame:
                 if event.type == pygame.QUIT:
                     exit_game = True
 
-            was_left_key_pressed = False
-            was_right_key_pressed = False
             if self.generate_train_data:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_LEFT]:
                     rotate_result = 0.5
-                    was_left_key_pressed = True
                 if keys[pygame.K_RIGHT]:
                     rotate_result = -0.5
-                    was_right_key_pressed = True
 
-            car.rotate_car(rotate_result)
+            car_surface_list = []
 
-            # SET CAR NEW SPEED AND ANGLE
+            for car in car_list:
 
-            speed_in_x, speed_in_y = self.__calculate_speed(car.angle)
+                car.rotate_car(rotate_result)
 
-            car.current_position = (car.current_position[0] + speed_in_x, car.current_position[1] + speed_in_y)
+                # SET CAR NEW SPEED AND ANGLE
+                speed_in_x, speed_in_y = self.__calculate_speed(car.angle)
 
-            car_rotated_surface, player_rect = self.get_car_rotated_surface(car)
+                car.current_position = (car.current_position[0] + speed_in_x, car.current_position[1] + speed_in_y)
 
-            # DETECT COLLISION BETWEEN CAR AND GRASS
+                car_surface_list.append(self.get_car_rotated_surface(car))
 
-            sensor_collision_point_list = self.__get_sensor_collision_vectors(car)
+                # DETECT COLLISION BETWEEN CAR AND GRASS
 
-            distance_from_collision_list = []
-            for sensor_collision_point in sensor_collision_point_list:
-                distance_from_collision_list.append(
-                    self.get_euclidean_distance(car.current_position, sensor_collision_point)
-                )
+                sensor_collision_point_list = self.__get_sensor_collision_vectors(car)
 
-            if not self.generate_train_data:
-                input_model = np.array(
-                    [[distance_from_collision_list[0],
-                      distance_from_collision_list[1],
-                      distance_from_collision_list[2],
-                      distance_from_collision_list[3],
-                      distance_from_collision_list[4]]])
-                prediction = self.nn_model.predict(input_model)
-                print(prediction)
-                if prediction[0][0] >= self.probability_to_decide:
-                    rotate_result = 0.5
-                elif prediction[0][1] >= self.probability_to_decide:
-                    rotate_result = -0.5
+                distance_from_collision_list = []
+                for sensor_collision_point in sensor_collision_point_list:
+                    distance_from_collision_list.append(
+                        self.get_euclidean_distance(car.current_position, sensor_collision_point)
+                    )
 
-            car.rotate_car(rotate_result)
+                car.sensor_collision_point_list = sensor_collision_point_list
 
-
-            # GENERATE TRAIN DATA
-
-            if self.generate_train_data:
-                train_data_dict = {'i_sensor_1': distance_from_collision_list[0],
-                                   'i_sensor_2': distance_from_collision_list[1],
-                                   'i_sensor_3': distance_from_collision_list[2],
-                                   'i_sensor_4': distance_from_collision_list[3],
-                                   'i_sensor_5': distance_from_collision_list[4],
-                                   'o_left': was_left_key_pressed,
-                                   'o_right': was_right_key_pressed
-                                   }
-                train_data_df = pandas.concat([train_data_df, pandas.DataFrame([train_data_dict])], sort=False)
-
+                car.rotate_car(rotate_result)
 
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
-            self.screen.blit(car_rotated_surface, player_rect)
-            for sensor_collision_point in sensor_collision_point_list:
-                pygame.draw.line(self.screen, RED, car.current_position, sensor_collision_point, 2)
+            for car_surface in car_surface_list:
+                self.screen.blit(car_surface[0], car_surface[1])
+            for car in car_list:
+                for sensor_collision_point in car.sensor_collision_point_list:
+                    pygame.draw.line(self.screen, RED, car.current_position, sensor_collision_point, 2)
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
 
         self.game_over = True
-        if self.generate_train_data:
-            train_data_df.to_csv(f'training_data_{datetime.now().strftime("%m-%d-%Y-%H-%M-%S")}.csv')
         pygame.quit()
 
     def __calculate_speed(self, angle) -> Tuple[float, float]:
@@ -167,7 +143,8 @@ class CarGame:
                 except Exception as e:
                     color_at_pixel = GREEN
 
-                if (color_at_pixel == GREEN or i == self.sensor_threshold - 1) and not sensor_collision_positions.get(f'{j}'):
+                if (color_at_pixel == GREEN or i == self.sensor_threshold - 1) and not sensor_collision_positions.get(
+                        f'{j}'):
                     sensor_collision_positions[f'{j}'] = sensor_positions[j]
 
         return list(sensor_collision_positions.values())
