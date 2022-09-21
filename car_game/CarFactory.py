@@ -3,7 +3,7 @@ import pygame
 from car_game.Car import Car
 from car_game.Sensor import Sensor
 
-FIVE_SENSOR_CAR_ANGLES = [90, 60, 0, -60, -90]
+FIVE_SENSOR_CAR_ANGLES = [90, 50, 0, -50, -90]
 
 
 class CarFactory:

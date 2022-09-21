@@ -17,9 +17,6 @@ WHITE = (255, 255, 255)
 GRAY = (139, 139, 139)
 GREEN = (24, 107, 24, 255)
 RED = (240, 34, 34)
-SENSOR_LINE_WIDTH = 5
-MIDDLE_SENSOR_ANGLE = 50
-RECT_SENSOR_ANGLE = 90
 CAR_SPRITE_LOCATION = 'car_game/images/car.png'
 
 
@@ -112,9 +109,9 @@ class CarGame:
                 prediction = self.nn_model.predict(input_model)
                 print(prediction)
                 if prediction[0][0] >= self.probability_to_decide:
-                    rotate_result = 3
+                    rotate_result = 0.5
                 elif prediction[0][1] >= self.probability_to_decide:
-                    rotate_result = -3
+                    rotate_result = -0.5
 
             car.rotate_car(rotate_result)
 
@@ -122,7 +119,6 @@ class CarGame:
             # GENERATE TRAIN DATA
 
             if self.generate_train_data:
-                print(distance_from_collision_list)
                 train_data_dict = {'i_sensor_1': distance_from_collision_list[0],
                                    'i_sensor_2': distance_from_collision_list[1],
                                    'i_sensor_3': distance_from_collision_list[2],
@@ -137,7 +133,7 @@ class CarGame:
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
             self.screen.blit(car_rotated_surface, player_rect)
             for sensor_collision_point in sensor_collision_point_list:
-                pygame.draw.line(self.screen, RED, car.current_position, sensor_collision_point, 10)
+                pygame.draw.line(self.screen, RED, car.current_position, sensor_collision_point, 2)
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
 
@@ -147,7 +143,6 @@ class CarGame:
         pygame.quit()
 
     def __calculate_speed(self, angle) -> Tuple[float, float]:
-        print(angle)
         speed_x = self.car_speed * math.sin(math.radians(angle))
         speed_y = self.car_speed * math.cos(math.radians(angle))
         return speed_x, speed_y
