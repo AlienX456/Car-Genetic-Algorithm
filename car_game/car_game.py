@@ -18,7 +18,7 @@ GRAY = (139, 139, 139)
 GREEN = (24, 107, 24, 255)
 RED = (240, 34, 34)
 SENSOR_LINE_WIDTH = 5
-MIDDLE_SENSOR_ANGLE = 60
+MIDDLE_SENSOR_ANGLE = 50
 RECT_SENSOR_ANGLE = 90
 CAR_SPRITE_LOCATION = 'car_game/images/car.png'
 
@@ -76,10 +76,10 @@ class CarGame:
             if self.generate_train_data:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_LEFT]:
-                    rotate_result = 3
+                    rotate_result = 0.5
                     was_left_key_pressed = True
                 if keys[pygame.K_RIGHT]:
-                    rotate_result = -3
+                    rotate_result = -0.5
                     was_right_key_pressed = True
 
             car.rotate_car(rotate_result)
