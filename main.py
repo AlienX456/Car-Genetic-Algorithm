@@ -7,7 +7,7 @@ def main():
                        road=RoadEnum.TWO, sensor_threshold=200, generate_train_data=True, nn_model=None,
                        probability_to_decide=0.95)
 
-    car_game.start_game()
+    car_game.start_neat()
 
 
 if __name__ == '__main__':

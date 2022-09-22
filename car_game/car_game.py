@@ -1,15 +1,14 @@
-import pygame
+import math
 from typing import Tuple
+import neat
+import os
+import pygame
+from tensorflow.keras.models import Sequential
 
 from car_game.Car import Car
 from car_game.CarFactory import CarFactory
-from car_game.road_generator import RoadGenerator
 from car_game.road_enum import RoadEnum
-import pandas
-import math
-from datetime import datetime
-from tensorflow.keras.models import Sequential
-import numpy as np
+from car_game.road_generator import RoadGenerator
 
 # COLORS
 BLACK = (0, 0, 0)
@@ -39,7 +38,22 @@ class CarGame:
         self.game_over = False
         self.probability_to_decide = probability_to_decide
 
-    def start_game(self):
+        local_dir = os.path.dirname(__file__)
+        config_path = os.path.join(local_dir, 'config.txt')
+        config = neat.config.Config(
+            neat.DefaultGenome,
+            neat.DefaultReproduction,
+            neat.DefaultSpeciesSet,
+            neat.DefaultStagnation,
+            config_path
+        )
+
+        self.pop = neat.Population(config)
+
+    def start_neat(self):
+        self.pop.run(self.__start_game, 50)
+
+    def __start_game(self, genomes, config):
 
         exit_game = False
 
@@ -47,17 +61,24 @@ class CarGame:
         car_image = pygame.transform.scale(image, (self.screen_size[0] * 0.03, self.screen_size[1] * 0.10))
 
         car_list = []
+        ge = []
+        nets = []
 
-        for i in range(0, 5):
+        for genome_id, genome in genomes:
+
             car_list.append(CarFactory.build_five_sensor_car(
                 position=self.road_generator.get_road_initial_position(self.road),
                 angle=90,
                 image_surface=car_image
             ))
+            ge.append(genome)
+            net = neat.nn.FeedForwardNetwork.create(genome, config)
+            nets.append(net)
+            genome.fitness = 0
+
 
         map_surface = self.road_generator.get_road_image(self.road)
 
-        train_data_df = pandas.DataFrame(columns=['i_sensor_1', 'i_sensor_2', 'i_sensor_3', 'o_left', 'o_right'])
 
         while not exit_game:
 
@@ -66,31 +87,20 @@ class CarGame:
 
             # VALIDATE EVENTS
 
-            rotate_result = 0
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     exit_game = True
 
-            if self.generate_train_data:
-                keys = pygame.key.get_pressed()
-                if keys[pygame.K_LEFT]:
-                    rotate_result = 0.5
-                if keys[pygame.K_RIGHT]:
-                    rotate_result = -0.5
-
             car_surface_list = []
 
-            for car in car_list:
+            car_to_remove_list = []
 
-                car.rotate_car(rotate_result)
+            for i, car in enumerate(car_list):
 
                 # SET CAR NEW SPEED AND ANGLE
                 speed_in_x, speed_in_y = self.__calculate_speed(car.angle)
 
                 car.current_position = (car.current_position[0] + speed_in_x, car.current_position[1] + speed_in_y)
-
-                car_surface_list.append(self.get_car_rotated_surface(car))
 
                 # DETECT COLLISION BETWEEN CAR AND GRASS
 
@@ -101,8 +111,32 @@ class CarGame:
                     distance_from_collision_list.append(
                         self.get_euclidean_distance(car.current_position, sensor_collision_point)
                     )
-
                 car.sensor_collision_point_list = sensor_collision_point_list
+                car.distance_from_collision_list = distance_from_collision_list
+                if list(filter(lambda x: x <= 1, distance_from_collision_list)):
+                    car_to_remove_list.append(car)
+                    ge[i].fitness -= 1
+                else:
+                    car_surface_list.append(self.get_car_rotated_surface(car))
+
+            for car_to_remove in car_to_remove_list:
+                index = car_list.index(car_to_remove)
+                car_list.pop(index)
+                ge.pop(index)
+                nets.pop(index)
+
+            for i, car in enumerate(car_list):
+                output = nets[i].activate((car.distance_from_collision_list[0],
+                                           car.distance_from_collision_list[1],
+                                           car.distance_from_collision_list[2],
+                                           car.distance_from_collision_list[3],
+                                           car.distance_from_collision_list[4]))
+
+                rotate_result = 0
+                if output[0] > 0.5:
+                    rotate_result = 0.5
+                elif output[1] > 0.5:
+                    rotate_result = -0.5
 
                 car.rotate_car(rotate_result)
 
@@ -122,6 +156,8 @@ class CarGame:
         speed_x = self.car_speed * math.sin(math.radians(angle))
         speed_y = self.car_speed * math.cos(math.radians(angle))
         return speed_x, speed_y
+
+
 
     def __rot_center(self, image, angle, x, y):
         rotated_image = pygame.transform.rotate(image, angle)
