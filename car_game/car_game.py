@@ -116,9 +116,9 @@ class CarGame:
                 car.distance_from_collision_list = distance_from_collision_list
                 if list(filter(lambda x: x <= 1, distance_from_collision_list)):
                     car_to_remove_list.append(car)
-                    ge[i].fitness -= 1
                 else:
                     car_surface_list.append(self.get_car_rotated_surface(car))
+                    ge[i].fitness += 1
 
             for car_to_remove in car_to_remove_list:
                 index = car_list.index(car_to_remove)
