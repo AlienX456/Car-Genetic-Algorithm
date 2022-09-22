@@ -139,9 +139,9 @@ class CarGame:
 
                 rotate_result = 0
                 if output[0] > 0.5:
-                    rotate_result = 5
+                    rotate_result = 10
                 elif output[1] > 0.5:
-                    rotate_result = -5
+                    rotate_result = -10
 
                 car.rotate_car(rotate_result)
 
