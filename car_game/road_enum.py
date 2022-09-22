@@ -6,3 +6,4 @@ class RoadEnum(Enum):
     TWO = 'TWO'
     THREE = 'THREE'
     FOUR = 'FOUR'
+    FIVE = 'FIVE'
