@@ -1,4 +1,5 @@
 import math
+import sys
 from typing import Tuple
 import neat
 import os
@@ -10,6 +11,7 @@ from car_game.CarFactory import CarFactory
 from car_game.road_enum import RoadEnum
 from car_game.road_generator import RoadGenerator
 
+pygame.init()
 # COLORS
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -17,6 +19,7 @@ GRAY = (139, 139, 139)
 GREEN = (24, 107, 24, 255)
 RED = (240, 34, 34)
 CAR_SPRITE_LOCATION = 'car_game/images/car.png'
+FONT = pygame.font.Font('freesansbold.ttf', 20)
 
 
 class CarGame:
@@ -65,7 +68,6 @@ class CarGame:
         nets = []
 
         for genome_id, genome in genomes:
-
             car_list.append(CarFactory.build_five_sensor_car(
                 position=self.road_generator.get_road_initial_position(self.road),
                 angle=90,
@@ -76,9 +78,7 @@ class CarGame:
             nets.append(net)
             genome.fitness = 0
 
-
         map_surface = self.road_generator.get_road_image(self.road)
-
 
         while not exit_game:
 
@@ -89,7 +89,8 @@ class CarGame:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    exit_game = True
+                    pygame.quit()
+                    sys.exit()
 
             car_surface_list = []
 
@@ -141,23 +142,27 @@ class CarGame:
                 car.rotate_car(rotate_result)
 
             # PAINT DISPLAY AND OBJECTS AND SET FRAMERATE
+
+            if len(car_list) == 0:
+                exit_game = True
+
             for car_surface in car_surface_list:
                 self.screen.blit(car_surface[0], car_surface[1])
             for car in car_list:
                 for sensor_collision_point in car.sensor_collision_point_list:
                     pygame.draw.line(self.screen, RED, car.current_position, sensor_collision_point, 2)
+
+            text_1 = FONT.render(f'Cars Alive:  {str(len(car_list))}', True, (0, 0, 0))
+            text_2 = FONT.render(f'Generation:  {self.pop.generation + 1}', True, (0, 0, 0))
+            self.screen.blit(text_1, (50, 480))
+            self.screen.blit(text_2, (50, 500))
             pygame.display.flip()
             self.clock.tick(self.frame_rate)
-
-        self.game_over = True
-        pygame.quit()
 
     def __calculate_speed(self, angle) -> Tuple[float, float]:
         speed_x = self.car_speed * math.sin(math.radians(angle))
         speed_y = self.car_speed * math.cos(math.radians(angle))
         return speed_x, speed_y
-
-
 
     def __rot_center(self, image, angle, x, y):
         rotated_image = pygame.transform.rotate(image, angle)
