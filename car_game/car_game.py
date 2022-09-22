@@ -54,7 +54,7 @@ class CarGame:
         self.pop = neat.Population(config)
 
     def start_neat(self):
-        self.pop.run(self.__start_game, 50)
+        self.pop.run(self.__start_game, 300)
 
     def __start_game(self, genomes, config):
 
@@ -115,10 +115,14 @@ class CarGame:
                 car.sensor_collision_point_list = sensor_collision_point_list
                 car.distance_from_collision_list = distance_from_collision_list
                 if list(filter(lambda x: x <= 1, distance_from_collision_list)):
+                    ge[i].fitness -= 1
                     car_to_remove_list.append(car)
+                elif list(filter(lambda x: x <= 20, distance_from_collision_list)):
+                    ge[i].fitness += 1
+                    car_surface_list.append(self.get_car_rotated_surface(car))
                 else:
                     car_surface_list.append(self.get_car_rotated_surface(car))
-                    ge[i].fitness += 1
+                    ge[i].fitness += 2
 
             for car_to_remove in car_to_remove_list:
                 index = car_list.index(car_to_remove)
@@ -135,9 +139,9 @@ class CarGame:
 
                 rotate_result = 0
                 if output[0] > 0.5:
-                    rotate_result = 0.5
+                    rotate_result = 5
                 elif output[1] > 0.5:
-                    rotate_result = -0.5
+                    rotate_result = -5
 
                 car.rotate_car(rotate_result)
 
