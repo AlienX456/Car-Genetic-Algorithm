@@ -18,6 +18,7 @@ WHITE = (255, 255, 255)
 GRAY = (139, 139, 139)
 GREEN = (24, 107, 24, 255)
 RED = (240, 34, 34)
+DEFAULT_CAR_NAME = 'blank'
 CAR_SPRITE_LOCATION = 'car_game/images/car.png'
 FONT = pygame.font.Font('freesansbold.ttf', 20)
 
@@ -66,12 +67,18 @@ class CarGame:
         car_list = []
         ge = []
         nets = []
+        names_list = ['Lucho', 'Sofi', 'DiegoBe', 'DiegoBu', 'JuanO', 'JuanF', 'Sami', 'Richard']
 
         for genome_id, genome in genomes:
+            try:
+                car_name = names_list.pop()
+            except IndexError:
+                car_name = DEFAULT_CAR_NAME
             car_list.append(CarFactory.build_five_sensor_car(
                 position=self.road_generator.get_road_initial_position(self.road),
                 angle=90,
-                image_surface=car_image
+                image_surface=car_image,
+                name=car_name
             ))
             ge.append(genome)
             net = neat.nn.FeedForwardNetwork.create(genome, config)
@@ -158,6 +165,9 @@ class CarGame:
 
             text_1 = FONT.render(f'Cars Alive:  {str(len(car_list))}', True, (0, 0, 0))
             text_2 = FONT.render(f'Generation:  {self.pop.generation + 1}', True, (0, 0, 0))
+            for car in car_list:
+                car_name_text = FONT.render(f'{car.name}', True, (0, 0, 0))
+                self.screen.blit(car_name_text, car.current_position)
             self.screen.blit(text_1, (50, 480))
             self.screen.blit(text_2, (50, 500))
             pygame.display.flip()

@@ -6,13 +6,14 @@ CAR_SPRITE_LOCATION = 'car_game/images/car.png'
 
 class Car:
 
-    def __init__(self, car_position: Tuple[int, int], angle: int, sensors_angle_list: [Sensor], image_surface):
+    def __init__(self, car_position: Tuple[int, int], angle: int, sensors_angle_list: [Sensor], image_surface, name: str):
         self.sensor_list = sensors_angle_list
         self.current_position = car_position
         self.angle = angle
         self.image_surface = image_surface
         self.sensor_collision_point_list = []
         self.distance_from_collision_list = []
+        self.name = name
 
     def rotate_car(self, rotation_angle: int):
         new_angle = self.angle + rotation_angle
